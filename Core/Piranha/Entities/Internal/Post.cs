@@ -152,6 +152,8 @@ namespace Piranha.Models
 		/// Gets/sets the created date.
 		/// </summary>
 		[Column(Name = "post_created")]
+		[DataType(DataType.Date)]
+		[DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
 		public override DateTime Created { get; set; }
 
 		/// <summary>
