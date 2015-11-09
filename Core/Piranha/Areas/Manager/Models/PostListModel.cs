@@ -111,6 +111,13 @@ namespace Piranha.Areas.Manager.Models
 		/// </summary>
 		public List<TemplateModel> Templates { get; set; }
 
+		public List<SiteTree> SiteTrees { get; set; }
+
+		/// <summary>
+		/// Gets/sets the internal id of the active site.
+		/// </summary>
+		public string ActiveSite { get; set; }
+
 		/// <summary>
 		/// Gets/sets the currently active post template.
 		/// </summary>
@@ -133,6 +140,11 @@ namespace Piranha.Areas.Manager.Models
 			return Get(Guid.Empty);
 		}
 
+		internal static PostListModel Get(string id)
+		{
+			return Get(Guid.Empty);
+		}
+
 
 		/// <summary>
 		/// Gets the post list model for the given post type id.
@@ -151,16 +163,23 @@ namespace Piranha.Areas.Manager.Models
 		/// <returns>The model</returns>
 		private static PostListModel Get(Guid templateid) {
 			var m = new PostListModel();
-
 			using (var db = new DataContext()) {
+				m.ActiveSite = "DEFAULT_SITE";
+				var activeSite=HttpContext.Current.Session["activeSite"] as string;
+				if (activeSite!=null)
+				{
+					m.ActiveSite = activeSite;
+				}
+
+				m.SiteTrees = db.SiteTrees.OrderBy(s => s.Name).ToList();
 				// Get the posts
 				var query = db.PostDrafts.Include(p => p.Template);
 				if (templateid != Guid.Empty) {
 					query = query.Where(p => p.TemplateId == templateid);
 					m.ActiveTemplate = templateid;
 				}
-				m.Posts = query.
-					OrderBy(p => p.Title).ToList().
+				m.Posts = query.Where(e=> e.Site == m.ActiveSite).
+					OrderByDescending(p => p.Created).ToList().
 					Select(p => new PostModel() {
 						Id = p.Id,
 						Title = p.Title,

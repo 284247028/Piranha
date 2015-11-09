@@ -1,0 +1,143 @@
+﻿@model Piranha.Areas.Manager.Models.PostListModel
+@using Piranha.Areas.Manager.Models;
+@section Head {
+    <style type="text/css">
+        .content .tabs {
+            float: left;
+            margin-left: 10px;
+        }
+        .content .tabs .selected {
+            border: 0 none;
+            padding: 10px 20px 6px;
+        }
+    </style>
+    <script type="text/javascript">
+        function addPost() {
+            @if (Model.ActiveTemplate == Guid.Empty) {
+                <text>floatBox.show('boxTemplates');</text>
+            } else {
+                <text>$('form').submit();</text>
+            }
+        }
+
+        $(document).ready(function () {
+            // Set the selected template id
+            $(".templates").click(function () {
+                $("#TemplateId").val($(this).attr("data-templateid"));
+                $("form").submit();
+            });
+
+            // Notification before delete
+            $(".delete").click(function() {
+                return confirm("@Piranha.Resources.Post.MessageDeleteConfirm") ;
+            });
+
+            // Setup post list
+            var options = {
+                listClass:  'list-js',
+                searchId: 'search',
+                valueNames: ['title', 'template', 'updated', 'created']
+            };
+            var postList = new List('list', options);
+        });
+    </script>
+}
+@section Toolbar { 
+@Html.Partial("Partial/Tabs")
+<div class="toolbar">
+    <div class="inner">
+        <ul>
+            <li><a onclick="addPost()" class="add">@Piranha.Resources.Global.ToolbarAdd</a></li>
+            <li><a href="" class="refresh">@Piranha.Resources.Global.ToolbarReload</a></li>
+            @Piranha.WebPages.Hooks.Manager.Toolbar.Render(Url, Model)
+        </ul>
+        <button class="search" title="@Piranha.Resources.Global.ToolbarSearch"></button>@Html.TextBox("search")
+        <div class="clear"></div>
+    </div>
+</div>
+}
+<div class="grid_12">
+@using (Html.BeginForm("insert", (string)ViewContext.RouteData.Values["Controller"])) {
+    <div>
+        @Html.Hidden("TemplateId", @Model.ActiveTemplate)
+        @if (Model.ActiveTemplate != Guid.Empty) {
+        <text>@Html.Hidden("returl", Url.Action("template", "post", new { id = Model.ActiveTemplate}))</text>
+        }
+    </div>
+    if (Model.Templates.Count > 1) {
+    <div>
+        <ul class="tabs">
+            <li><a href="@Url.Action("index", "post")" @(Model.ActiveTemplate == Guid.Empty ? "class=selected" : "")>All</a></li>
+            @foreach (var template in Model.Templates) {
+            <li>
+                <a href="@Url.Action("template", "post", new { @id = template.Id })" @(template.Id == Model.ActiveTemplate ? "class=selected" : "")>@template.Name</a>
+            </li>
+            }
+        </ul>
+        <div class="clear"></div>
+    </div>
+    }
+    <table id="list" class="list">
+        <thead>
+            <tr>
+                <th><span class="sort asc" data-sort="title">@Piranha.Resources.Global.Title</span></th>
+                <th><span class="sort" data-sort="template">@Piranha.Resources.Global.Type</span></th>
+                <th class="date"><span class="sort" data-sort="updated">@Piranha.Resources.Global.Updated</span></th>
+                <th class="date"><span class="sort" data-sort="created">@Piranha.Resources.Global.Created</span></th>
+                <th class="one"></th>
+            </tr>
+        </thead>
+        <tbody class="list-js">
+            @foreach (var post in Model.Posts) {
+            <tr@(post.Status == PostListModel.PostStatus.DRAFT || post.Status == PostListModel.PostStatus.UNPUBLISHED ? " class=draft" : "")>
+                <td class="title">
+                    <a href="@(Model.ActiveTemplate == Guid.Empty ? 
+                        Url.Action("edit", new { id = post.Id }) : 
+                        Url.Action("edit", new { id = post.Id, returl = Url.Action("template", new { id = Model.ActiveTemplate}) }))">
+                    @post.Title
+                    <div class="list-info">
+                        @Html.Raw(post.Status == PostListModel.PostStatus.UNPUBLISHED ? "<span class=info-unpublished></span>" : (post.Status == PostListModel.PostStatus.DRAFT ? "<span class=info-draft></span>" : ""))
+                        @if (post.NewComments > 0) {
+                        <span class="notification">@post.NewComments</span>
+                        }
+                    </div>
+                </a></td>
+                <td class="template">@post.TemplateName</td>
+                <td class="updated">@post.Updated.ToString("yyyy-MM-dd")</td>
+                <td class="created">@post.Created.ToString("yyyy-MM-dd")</td>
+                <td class="buttons">
+                    @if (User.HasAccess("ADMIN_POST_PUBLISH")) {
+                    <a href="@Url.Action("delete", new { id = post.Id })" title="Ta bort artikel" class="icon delete"></a>
+                    }
+                </td>
+            </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="5"></td>
+            </tr>
+        </tfoot>
+    </table>
+}
+</div>
+
+@section Foot {
+<div id="boxTemplates" class="floatbox">
+    <div class="bg"></div>
+    <div class="box">
+        <div class="title"><a class="close-btn right" data-id="boxTemplates"></a><h2>@Piranha.Resources.Post.PopupTypeTitle</h2></div>
+        <div class="inner">
+        @foreach (var template in Model.Templates) {
+            <div class="templates @(Model.Templates.Count > 6 ? "compressed" : "") left" data-templateid="@template.Id">
+                <h3>@template.Name</h3>
+                <div class="preview" style="width:120px;height:120px;margin:0 auto;">
+                    @template.Preview.Html()
+                </div>
+                <p>@template.Description</p>
+            </div>
+        } 
+        </div>
+    </div>
+</div>
+}

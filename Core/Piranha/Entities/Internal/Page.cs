@@ -367,6 +367,7 @@ namespace Piranha.Models
 		/// <param name="draft">Whether to get the current draft or not</param>
 		/// <returns>The page</returns>
 		public static Page GetByPermalink(Guid siteTreeId, string permalink, bool draft = false) {
+			if (permalink == null) permalink = siteTreeId.ToString();
 			if (!draft) {
 				var id = GetFromPermalinkCache(siteTreeId, permalink.ToLower());
 

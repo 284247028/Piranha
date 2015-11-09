@@ -123,6 +123,8 @@ namespace Piranha.Entities
 		/// Gets/sets the id of the user who last updated the post.
 		/// </summary>
 		public Guid UpdatedById { get; set; }
+
+		public string Site { get; set; }
 		#endregion
 
 		#region Navigation properties

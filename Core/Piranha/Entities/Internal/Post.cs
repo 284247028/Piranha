@@ -189,6 +189,9 @@ namespace Piranha.Models
 		/// </summary>
 		[Column(Name = "post_updated_by")]
 		public override Guid UpdatedBy { get; set; }
+
+		[Column(Name = "site")]
+		public string Site { get; set; }
 		#endregion
 
 		#region Properties
