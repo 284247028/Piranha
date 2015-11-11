@@ -152,6 +152,8 @@ namespace Piranha.Models
 		/// Gets/sets the created date.
 		/// </summary>
 		[Column(Name = "post_created")]
+		[DataType(DataType.Date)]
+		[DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}", ApplyFormatInEditMode = true)]
 		public override DateTime Created { get; set; }
 
 		/// <summary>
@@ -189,6 +191,9 @@ namespace Piranha.Models
 		/// </summary>
 		[Column(Name = "post_updated_by")]
 		public override Guid UpdatedBy { get; set; }
+
+		[Column(Name = "site")]
+		public string Site { get; set; }
 		#endregion
 
 		#region Properties

@@ -27,7 +27,12 @@ namespace Piranha.Areas.Manager.Controllers
 		[Access(Function = "ADMIN_PAGE")]
 		public ActionResult Index(string id = "") {
 			var internalId = Config.SiteTree;
-
+			
+			var activeSite = Session["activeSite"] as string;
+			if (activeSite != null)
+			{
+				internalId = activeSite;
+			}
 			try {
 				var param = Piranha.Models.SysParam.GetByName("SITEMAP_EXPANDED_LEVELS");
 				ViewBag.Levels = param != null ? Convert.ToInt32(param.Value) : 0;

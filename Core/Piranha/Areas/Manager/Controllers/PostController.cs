@@ -26,6 +26,11 @@ namespace Piranha.Areas.Manager.Controllers
 		/// </summary>
 		[Access(Function = "ADMIN_POST")]
 		public ActionResult Index() {
+			var activeSite = Session["activeSite"] as string;
+			if (activeSite != null)
+			{
+				return Site(activeSite);
+			}
 			var m = Models.PostListModel.Get();
 			ViewBag.Title = @Piranha.Resources.Post.ListTitle;
 
@@ -36,6 +41,24 @@ namespace Piranha.Areas.Manager.Controllers
 			return View(@"~/Areas/Manager/Views/Post/Index.cshtml", m);
 		}
 
+
+		/// <summary>
+		/// Gets the site tree with the given id.
+		/// </summary>
+		/// <param name="id">The internal id of the site tree</param>
+		[Access(Function = "ADMIN_PAGE")]
+		public ActionResult Site(string id)
+		{
+			Session["activeSite"] = id.ToUpper();
+			var m = Models.PostListModel.Get(id);
+			ViewBag.Title = @Piranha.Resources.Post.ListTitle;
+
+			// Executes the post list loaded hook, if registered
+			if (WebPages.Hooks.Manager.PostListModelLoaded != null)
+				WebPages.Hooks.Manager.PostListModelLoaded(this, WebPages.Manager.GetActiveMenuItem(), m);
+
+			return View(@"~/Areas/Manager/Views/Post/Index.cshtml", m);
+		}
 		/// <summary>
 		/// Gets the post list for the specified post template.
 		/// </summary>
@@ -101,6 +124,7 @@ namespace Piranha.Areas.Manager.Controllers
 		public ActionResult Edit(bool draft, EditModel m) {
 			if (ModelState.IsValid) {
 				try {
+					m.Post.Site = ((String)Session["activeSite"]).ToUpper();
 					// Executes the post edit before save hook, if registered
 					if (WebPages.Hooks.Manager.PostEditModelBeforeSave != null)
 						WebPages.Hooks.Manager.PostEditModelBeforeSave(this, WebPages.Manager.GetActiveMenuItem(), m, !draft);

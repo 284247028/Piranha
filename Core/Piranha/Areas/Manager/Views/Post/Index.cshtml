@@ -64,7 +64,22 @@
         <text>@Html.Hidden("returl", Url.Action("template", "post", new { id = Model.ActiveTemplate}))</text>
         }
     </div>
-    if (Model.Templates.Count > 1) {
+	if (Model.SiteTrees.Count > 1)
+	{
+		<div>
+			<ul class="sites tabs">
+				@foreach (var site in Model.SiteTrees)
+				{
+					<li>
+						<a href="@Url.Action("site", "post", new { @id = site.InternalId.ToLower() })" @(site.InternalId == Model.ActiveSite ? "class=selected" : "")>@site.Name</a>
+					</li>
+				}
+			</ul>
+			<div class="clear"></div>
+		</div>
+	}
+	if (Model.Templates.Count > 1)
+	{
     <div>
         <ul class="tabs">
             <li><a href="@Url.Action("index", "post")" @(Model.ActiveTemplate == Guid.Empty ? "class=selected" : "")>All</a></li>

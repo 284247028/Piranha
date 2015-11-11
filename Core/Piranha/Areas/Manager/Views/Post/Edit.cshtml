@@ -7,6 +7,8 @@
     <script type="text/javascript" src="~/res.ashx/areas/manager/content/js/jquery.media.dialog.js"></script>
     <script type="text/javascript" src="~/res.ashx/areas/manager/content/js/jquery.comments.js"></script>
     <script type="text/javascript" src="~/res.ashx/areas/manager/content/js/ext/jquery.equalheights.js"></script>
+<script type="text/javascript" src="~/res.ashx/areas/manager/content/js/ext/jquery-ui-1.9.2.custom.min.js"></script>
+
     @Html.Partial("~/Areas/Manager/Views/Shared/Partial/TinyMCE.cshtml")
     <script type="text/javascript">
         var isFixed = false;
@@ -139,7 +141,6 @@
     @Html.HiddenFor(m => m.Post.Permalink)
     @Html.HiddenFor(m => m.Post.TemplateId)
     @Html.HiddenFor(m => m.Post.PermalinkId)
-    @Html.HiddenFor(m => m.Post.Created)
     @Html.HiddenFor(m => m.Post.Updated)
     @Html.HiddenFor(m => m.Post.Published)
     @Html.HiddenFor(m => m.Post.LastPublished)
@@ -165,6 +166,13 @@
                             @Html.TextBoxFor(m => m.Post.Title)</div>
                         @Html.ValidationMessageFor(m => m.Post.Title)
                     </li>
+                    <li>
+                        @Html.LabelFor(m => m.Post.Created)
+                    <div class="input datepicker">
+                        @Html.EditorFor(m => m.Post.Created)
+                    </div>
+                    @Html.ValidationMessageFor(m => m.Post.Created)
+                </li>
                     <li class="protected">@Html.LabelFor(m => m.Post.Permalink)
                 	    @if (!Model.Post.IsNew) {
                         <p>@Piranha.WebPages.WebPiranha.GetSiteUrl()@Url.GetPermalink(Model.Post.Permalink)</p>
@@ -344,6 +352,11 @@
     </div>
     }
 </div>
+<script>
+    $('.datepicker input').datepicker({
+        dateFormat: "yy-mm-dd"
+    });
+</script>
 @{ Html.EndForm() ; }
 @section Foot {
  <div id="boxContent" class="floatbox">

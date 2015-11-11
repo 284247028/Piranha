@@ -117,6 +117,27 @@ namespace Piranha.Models.Manager.PageModels
 						Page.GetScalar("SELECT COUNT(*) FROM page WHERE page_draft = 1 AND page_sitetree_id = @0 AND page_parent_id != @0 AND page_original_id IS NULL AND page_published IS NOT NULL AND page_description IS NULL", site.Id);
 				}
 			}
+
+			var activeSite = HttpContext.Current.Session["activeSite"] as string;
+			if (activeSite != null)
+			{
+				ActiveSite = activeSite;
+				SiteMap = Sitemap.GetStructure(activeSite, false);
+				Pages = Sitemap.GetStructure(activeSite, false).Flatten();
+				ActiveSite = activeSite.ToUpper();
+				NewSeqno = SiteMap.Count + 1;
+
+				using (var db = new DataContext())
+				{
+					ActiveSiteId = db.SiteTrees.Where(s => s.InternalId == activeSite).Select(s => s.Id).Single();
+				}
+
+				// Check completion warnings
+				foreach (var page in Pages)
+				{
+					PageWarnings[page.Id] = 0 + (String.IsNullOrEmpty(page.Keywords) ? 1 : 0) + (String.IsNullOrEmpty(page.Description) ? 1 : 0);
+				}
+			}
 		}
 
 		/// <summary>
@@ -137,6 +158,7 @@ namespace Piranha.Models.Manager.PageModels
 			using (var db = new DataContext()) {
 				m.ActiveSiteId = db.SiteTrees.Where(s => s.InternalId == internalId).Select(s => s.Id).Single();
 			}
+			HttpContext.Current.Session["activeSite"] = m.ActiveSite;
 
 			// Check completion warnings
 			foreach (var page in m.Pages) {
@@ -158,6 +180,7 @@ namespace Piranha.Models.Manager.PageModels
 			m.Pages = Sitemap.GetStructure(internalId, false).Flatten()
 				.Where(s => s.Published != DateTime.MinValue && (String.IsNullOrEmpty(s.Keywords) || String.IsNullOrEmpty(s.Description))).ToList();
 			m.ActiveSite = internalId.ToUpper();
+			HttpContext.Current.Session["activeSite"] = m.ActiveSite;
 
 			using (var db = new DataContext()) {
 				m.ActiveSiteId = db.SiteTrees.Where(s => s.InternalId == internalId).Select(s => s.Id).Single();
